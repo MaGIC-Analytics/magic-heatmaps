@@ -5,8 +5,8 @@ LABEL authors="Alex Lemenze" \
 RUN apt-get update && apt-get install -y \ 
     sudo libhdf5-dev build-essential libcurl4-gnutls-dev libxml2-dev libssl-dev libv8-dev libsodium-dev libglpk40
 
-RUN R -e "install.packages(c('BiocManager','shiny','shinythemes','shinycssloaders', 'shinyWidgets'),repos='http://cran.rstudio.com/')"
-#RUN R -e "BiocManager::install(c())"
+RUN R -e "install.packages(c('BiocManager','shiny','shinythemes','shinycssloaders','shinyWidgets','devtools','DT','tidyverse','data.table','RColorBrewer','colourpicker','remotes','pheatmap'),repos='http://cran.rstudio.com/')"
+RUN R -e "BiocManager::install(c('ComplexHeatmap'))"
 
 COPY ./app /srv/shiny-server/
 COPY shiny-customized.config /etc/shiny-server/shiny-server.conf

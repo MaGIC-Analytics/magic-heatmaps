@@ -1,0 +1,13 @@
+,SampleName,Group,Test
+Treatment1,Treatment1,Treatment,One
+Treatment2,Treatment2,Treatment,Two
+Treatment3,Treatment3,Treatment,Three
+Vector1,Vector1,Vector,One
+Vector2,Vector2,Vector,Two
+Vector3,Vector3,Vector,Three
+KO1,KO1,Knockout,One
+KO2,KO2,Knockout,Two
+KO3,KO3,Knockout,Three
+WT1,WT1,WildType,One
+WT2,WT2,WildType,Two
+WT3,WT3,WildType,Three
