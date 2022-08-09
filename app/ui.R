@@ -209,7 +209,7 @@ tagList(
                 wellPanel(
                     fluidRow(
                         column(4, align='center',
-                        tags$a(href="https://github.com/MaGIC-Analytics/{$TOOL}", icon("github", "fa-3x")),
+                        tags$a(href="https://github.com/MaGIC-Analytics/magic-heatmaps", icon("github", "fa-3x")),
                         tags$h4('GitHub to submit issues/requests')
                         ),
                         column(4, align='center',
