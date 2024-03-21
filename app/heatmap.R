@@ -22,7 +22,7 @@ heatmapper <- reactive({
     my_colors = rev(my_colors)
 
     hm_plot <- pheatmap(InputReactive()$count_data, cluster_rows=input$RClust, cluster_cols=input$CClust, 
-        scale=input$Scale, annotation_col=annotation_col,, color=my_colors,
+        scale=input$Scale, annotation_col=annotation_col, color=my_colors,
         show_rownames=input$RName, show_colnames=input$CName, fontsize=input$HXsize, angle_col=input$Hang)
     return(hm_plot)
 
