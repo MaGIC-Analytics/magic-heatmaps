@@ -1,17 +1,61 @@
-FROM rocker/shiny:4.2.0
+FROM rocker/shiny-verse:4.5.3
 LABEL authors="Alex Lemenze" \
-    description="Docker image containing the MaGIC Modules Template."
+    description="Docker image for MaGIC RNA-seq Heatmap Tool"
 
-RUN apt-get update && apt-get install -y \ 
-    sudo libhdf5-dev build-essential libcurl4-gnutls-dev libxml2-dev libssl-dev libv8-dev libsodium-dev libglpk40
+# ── System dependencies ──────────────────────────────────────────────────────
+RUN apt-get update && apt-get install -y \
+    sudo \
+    libhdf5-dev \
+    build-essential \
+    libcurl4-gnutls-dev \
+    libxml2-dev \
+    libssl-dev \
+    libv8-dev \
+    libsodium-dev \
+    libglpk40 \
+    libpng-dev \
+    libjpeg-dev \
+    libtiff-dev \
+    libfontconfig1-dev \
+    libharfbuzz-dev \
+    libfribidi-dev \
+    libfreetype6-dev && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN R -e "install.packages(c('BiocManager','shiny','shinythemes','shinycssloaders','shinyWidgets','devtools','DT','tidyverse','data.table','RColorBrewer','colourpicker','remotes','pheatmap'),repos='http://cran.rstudio.com/')"
-RUN R -e "BiocManager::install(c('ComplexHeatmap'))"
+# ── CRAN packages ────────────────────────────────────────────────────────────
+RUN R -e "install.packages(c( \
+    'BiocManager', \
+    'shiny', \
+    'shinyjs', \
+    'shinythemes', \
+    'shinycssloaders', \
+    'shinyWidgets', \
+    'DT', \
+    'tidyverse', \
+    'data.table', \
+    'RColorBrewer', \
+    'colourpicker', \
+    'circlize', \
+    'msigdbr' \
+    ), repos='https://cran.rstudio.com/', dependencies=TRUE)"
 
+# ── Bioconductor packages ────────────────────────────────────────────────────
+RUN R -e "BiocManager::install(c( \
+    'ComplexHeatmap', \
+    'BiocGenerics', \
+    'S4Vectors', \
+    'IRanges', \
+    'GenomeInfoDb', \
+    'GenomicRanges' \
+    ), ask=FALSE, update=FALSE)"
+
+# ── Copy application files ───────────────────────────────────────────────────
 COPY ./app /srv/shiny-server/
 COPY shiny-customized.config /etc/shiny-server/shiny-server.conf
-RUN sudo chown -R shiny:shiny /srv/shiny-server
-EXPOSE 8080
 
+# ── Permissions ──────────────────────────────────────────────────────────────
+RUN chown -R shiny:shiny /srv/shiny-server
+
+EXPOSE 8080
 USER shiny
 CMD ["/usr/bin/shiny-server"]

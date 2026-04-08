@@ -1,0 +1,10 @@
+Sample,Group,Gender,Tissue
+Sample_A1,Control,Male,Liver
+Sample_A2,Control,Female,Liver
+Sample_A3,Control,Male,Liver
+Sample_B1,Treatment_Low,Female,Liver
+Sample_B2,Treatment_Low,Male,Liver
+Sample_B3,Treatment_Low,Female,Liver
+Sample_C1,Treatment_High,Male,Liver
+Sample_C2,Treatment_High,Female,Liver
+Sample_C3,Treatment_High,Male,Liver
