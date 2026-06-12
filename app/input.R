@@ -10,6 +10,21 @@ read_delim_auto <- function(path) {
     }
 }
 
+# ── msigdbr version-compatibility shim ─────────────────────────────────────────
+# msigdbr >= 10 renamed category/subcategory -> collection/subcollection and split
+# KEGG into CP:KEGG_LEGACY/CP:KEGG_MEDICUS. Take the legacy argument names, try the
+# new API first, fall back to the old one. gs_name / gene_symbol are stable.
+msigdbr_compat <- function(species, category, subcategory = NULL) {
+    sub_new <- if (identical(subcategory, "CP:KEGG")) "CP:KEGG_LEGACY" else subcategory
+    tryCatch(
+        do.call(msigdbr, c(list(species = species, collection = category),
+                           if (!is.null(sub_new)) list(subcollection = sub_new))),
+        error = function(e)
+            do.call(msigdbr, c(list(species = species, category = category),
+                               if (!is.null(subcategory)) list(subcategory = subcategory)))
+    )
+}
+
 # Reactive: expression matrix (rows=genes, cols=samples; first col = gene ID)
 MatrixReactive <- reactive({
     if (input$DemoData == FALSE) {
@@ -81,6 +96,22 @@ ProcessedMatrix <- reactive({
     m <- as.matrix(mat[, ..num_cols])
     rownames(m) <- make.unique(gene_names)
     storage.mode(m) <- "numeric"
+
+    # Restrict to samples present in BOTH the matrix and the metadata (shared set,
+    # in matrix-column order). Matches the qc/deg idiom and keeps NA-metadata
+    # samples out of annotations/grouping instead of showing them as an "NA" group.
+    meta_raw <- MetadataReactive()
+    if (!is.null(meta_raw) && ncol(meta_raw) >= 1) {
+        sample_ids <- as.character(meta_raw[[colnames(meta_raw)[1]]])
+        shared <- intersect(colnames(m), sample_ids)
+        shiny::validate(need(length(shared) >= 1,
+            "No samples are shared between the matrix columns and the metadata sample names."))
+        if (length(shared) < ncol(m)) {
+            showNotification(sprintf("Using %d of %d matrix samples that are present in the metadata.",
+                length(shared), ncol(m)), type='warning', duration=8)
+        }
+        m <- m[, shared, drop=FALSE]
+    }
     m
 })
 
@@ -173,13 +204,13 @@ observe({
         src         <- input$db_source  %||% "H"
 
         if (src == "H") {
-            gs_df <- msigdbr(species=species_sel, category="H")
+            gs_df <- msigdbr_compat(species_sel, "H")
         } else if (src == "C2_KEGG") {
-            gs_df <- msigdbr(species=species_sel, category="C2", subcategory="CP:KEGG")
+            gs_df <- msigdbr_compat(species_sel, "C2", "CP:KEGG")
         } else if (src == "C5_BP") {
-            gs_df <- msigdbr(species=species_sel, category="C5", subcategory="GO:BP")
+            gs_df <- msigdbr_compat(species_sel, "C5", "GO:BP")
         } else if (src == "C5_MF") {
-            gs_df <- msigdbr(species=species_sel, category="C5", subcategory="GO:MF")
+            gs_df <- msigdbr_compat(species_sel, "C5", "GO:MF")
         }
 
         gene_sets <- sort(unique(gs_df$gs_name))
@@ -191,4 +222,9 @@ observe({
 })
 
 # Null-coalescing operator (not in base R < 4.4)
-`%||%` <- function(a, b) if (!is.null(a) && length(a) > 0 && a != "") a else b
+`%||%` <- function(a, b) {
+    if (is.null(a)) return(b)
+    if (length(a) == 0) return(b)
+    if (length(a) == 1 && is.character(a) && !nzchar(a)) return(b)
+    a
+}

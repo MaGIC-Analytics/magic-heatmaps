@@ -34,13 +34,13 @@ observeEvent(input$apply_genes, {
             src         <- input$db_source  %||% "H"
 
             if (src == "H") {
-                gs_df <- msigdbr(species=species_sel, category="H")
+                gs_df <- msigdbr_compat(species_sel, "H")
             } else if (src == "C2_KEGG") {
-                gs_df <- msigdbr(species=species_sel, category="C2", subcategory="CP:KEGG")
+                gs_df <- msigdbr_compat(species_sel, "C2", "CP:KEGG")
             } else if (src == "C5_BP") {
-                gs_df <- msigdbr(species=species_sel, category="C5", subcategory="GO:BP")
+                gs_df <- msigdbr_compat(species_sel, "C5", "GO:BP")
             } else if (src == "C5_MF") {
-                gs_df <- msigdbr(species=species_sel, category="C5", subcategory="GO:MF")
+                gs_df <- msigdbr_compat(species_sel, "C5", "GO:MF")
             }
 
             gs_genes <- gs_df$gene_symbol[gs_df$gs_name == input$db_geneset]
